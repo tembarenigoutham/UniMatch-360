@@ -1,0 +1,4 @@
+source_customer_id,name,email,phone,dob,address
+BULK10001,Bulk New Customer,bulknew10001@example.com,9011111111,2001-01-10,10 Test Street Salem
+BULK10002,Test Customer,test10001@example.com,9022222222,2000-01-16,20 Another Street Salem
+BULK10003,Bulk Another Customer,bulknew10003@example.com,9033333333,1999-05-20,30 Test Road Coimbatore

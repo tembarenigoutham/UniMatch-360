@@ -1,0 +1,7 @@
+{
+  "phone": ["SourceA", "SourceB", "SourceC"],
+  "email": ["SourceB", "SourceA", "SourceC"],
+  "name": ["SourceA", "SourceB", "SourceC"],
+  "address": ["SourceB", "SourceA", "SourceC"],
+  "dob": ["SourceA", "SourceB", "SourceC"]
+}

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unified Customer 360 | MDM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-left">
+    <div class="brand-logo">
+      <div class="logo-mark"><span>★</span><span>★</span><span>★</span><span>★</span></div>
+      <div class="brand-text">
+        <span class="bank-name">UNIBANK</span>
+        <span class="app-title">Unified Customer 360 & MDM Engine</span>
+      </div>
+    </div>
+    <div class="environment-badge">
+      <span class="status-dot pulse"></span> MDM Hub
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn btn-secondary" id="btn-view-audit">◷ Audit Trail</button>
+    <button class="btn btn-secondary" id="btn-open-upload">⇧ Bulk CSV Import</button>
+    <button class="btn btn-primary" id="btn-open-customer">＋ Upload Customer Data</button>
+  </div>
+</header>
+
+<main class="main-content">
+
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon icon-emerald">👥</div>
+      <div class="kpi-content">
+        <div class="kpi-label">Golden Records</div>
+        <div class="kpi-value" id="kpi-golden">-</div>
+        <div class="kpi-subtext" id="kpi-source">From - source records</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-indigo">◈</div>
+      <div class="kpi-content">
+        <div class="kpi-label">Matched Groups</div>
+        <div class="kpi-value" id="kpi-matched">-</div>
+        <div class="kpi-subtext" id="kpi-singletons">- singleton records</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-purple">✓</div>
+      <div class="kpi-content">
+        <div class="kpi-label">Match Links</div>
+        <div class="kpi-value" id="kpi-links">-</div>
+        <div class="kpi-subtext">Resolved source relationships</div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon icon-amber">₹</div>
+      <div class="kpi-content">
+        <div class="kpi-label">Linked Transactions</div>
+        <div class="kpi-value" id="kpi-transactions">-</div>
+        <div class="kpi-subtext" id="kpi-linkage">- linkage rate</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Customer Master Data</h2>
+        <p>Search and manage unified Golden Records.</p>
+      </div>
+
+      <div class="search-filter-row">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input id="search-input" type="text"
+                 placeholder="Search by Name, Email, Phone or Golden ID...">
+          <button class="clear-search" id="clear-search" hidden>×</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="selection-bar" class="selection-bar" hidden>
+      <div>
+        <strong><span id="selected-count">0</span> customers selected</strong>
+        <span class="selection-help">Bulk update the same field for all selected records.</span>
+      </div>
+      <div class="bulk-controls">
+        <select id="bulk-field" class="select-control">
+          <option value="name">Name</option>
+          <option value="email">Email</option>
+          <option value="phone">Phone</option>
+          <option value="address">Address</option>
+          <option value="dob">DOB</option>
+        </select>
+        <input id="bulk-value" class="input-control" placeholder="New value">
+        <button id="btn-bulk-update" class="btn btn-primary">Bulk Update</button>
+        <button id="btn-clear-selection" class="btn btn-secondary">Clear</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="customer-table">
+        <thead>
+          <tr>
+            <th class="checkbox-col"><input type="checkbox" id="select-all"></th>
+            <th>Golden ID</th>
+            <th>Customer Name</th>
+            <th>Primary Email</th>
+            <th>Primary Phone</th>
+            <th>Match Group</th>
+            <th>Quality</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="customer-table-body"></tbody>
+      </table>
+
+      <div class="empty-state" id="table-empty-state" hidden>
+        <div class="empty-icon">⌕</div>
+        <h3>No customers found</h3>
+        <p>Try another search term.</p>
+      </div>
+    </div>
+
+    <div class="pagination-footer">
+      <div class="pagination-info" id="pagination-info">Showing 0 of 0</div>
+      <div class="pagination-controls">
+        <button class="btn btn-sm btn-secondary" id="btn-prev" disabled>Previous</button>
+        <span id="page-label">Page 1</span>
+        <button class="btn btn-sm btn-secondary" id="btn-next" disabled>Next</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- CUSTOMER 360 -->
+<div class="modal-backdrop" id="c360-modal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-header">
+      <div class="customer-modal-title">
+        <div class="avatar-badge" id="m-avatar">CU</div>
+        <div>
+          <div class="customer-title-row">
+            <h2 id="m-name">Customer</h2>
+            <span class="badge badge-master" id="m-golden-id">GOLD_000000</span>
+            <span class="quality-pill" id="m-quality">100%</span>
+          </div>
+          <div class="source-systems-row" id="m-systems"></div>
+        </div>
+      </div>
+      <button class="modal-close" id="btn-close-c360">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="tab-overview">Golden Record</button>
+        <button class="tab-btn" data-tab="tab-transactions">
+          Transactions (<span id="m-txn-count">0</span>)
+        </button>
+        <button class="tab-btn" data-tab="tab-sources">
+          Source Records (<span id="m-source-count">0</span>)
+        </button>
+      </div>
+
+      <div class="tab-pane active" id="tab-overview">
+        <div class="section-intro">
+          <h4>Single Version of Truth</h4>
+          <p>Unified customer profile generated from the resolved Golden Record.</p>
+        </div>
+
+        <div class="golden-attributes-grid">
+          <div class="attribute-card">
+            <div class="attr-header"><span>Name</span><span class="source-trace-badge" id="trace-name">-</span></div>
+            <div class="attr-value" id="val-name">-</div>
+            <button class="btn-override" data-field="name">Edit</button>
+          </div>
+
+          <div class="attribute-card">
+            <div class="attr-header"><span>Email</span><span class="source-trace-badge" id="trace-email">-</span></div>
+            <div class="attr-value" id="val-email">-</div>
+            <button class="btn-override" data-field="email">Edit</button>
+          </div>
+
+          <div class="attribute-card">
+            <div class="attr-header"><span>Phone</span><span class="source-trace-badge" id="trace-phone">-</span></div>
+            <div class="attr-value" id="val-phone">-</div>
+            <button class="btn-override" data-field="phone">Edit</button>
+          </div>
+
+          <div class="attribute-card">
+            <div class="attr-header"><span>Date of Birth</span><span class="source-trace-badge" id="trace-dob">-</span></div>
+            <div class="attr-value" id="val-dob">-</div>
+            <button class="btn-override" data-field="dob">Edit</button>
+          </div>
+
+          <div class="attribute-card span-2">
+            <div class="attr-header"><span>Address</span><span class="source-trace-badge" id="trace-address">-</span></div>
+            <div class="attr-value" id="val-address">-</div>
+            <button class="btn-override" data-field="address">Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-transactions">
+        <div class="section-intro">
+          <h4>Transaction History</h4>
+          <p>Transactions linked to this Golden Record.</p>
+        </div>
+        <div class="table-responsive">
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Account</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-container"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-sources">
+        <div class="section-intro">
+          <h4>Source Records</h4>
+          <p>Underlying records contributing to the customer identity.</p>
+        </div>
+        <div class="source-records-grid" id="source-records-container"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-footer-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT CUSTOMER -->
+<div class="modal-backdrop" id="edit-modal">
+  <div class="modal-dialog modal-md">
+    <div class="modal-header">
+      <h3>Edit Golden Record</h3>
+      <button class="modal-close" id="btn-close-edit">×</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="edit-form">
+        <input type="hidden" id="edit-golden-id">
+        <input type="hidden" id="edit-field">
+
+        <div class="form-group">
+          <label>Golden ID</label>
+          <input id="edit-id-display" class="input-control" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>Field</label>
+          <input id="edit-field-display" class="input-control" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>Current Value</label>
+          <input id="edit-current" class="input-control" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>New Value *</label>
+          <input id="edit-new-value" class="input-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>Data Steward</label>
+          <input id="edit-changed-by" class="input-control" value="Data Steward" required>
+        </div>
+
+        <div class="form-group">
+          <label>Reason</label>
+          <input id="edit-reason" class="input-control" value="Manual customer data correction">
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-edit">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-edit">Save Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIT -->
+<div class="modal-backdrop" id="audit-modal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-header">
+      <h3>Master Data Governance — Audit Trail</h3>
+      <button class="modal-close" id="btn-close-audit">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-responsive">
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Golden ID</th>
+              <th>Field</th>
+              <th>Old Value</th>
+              <th>New Value</th>
+              <th>Steward</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BULK IMPORT -->
+<div class="modal-backdrop" id="upload-modal">
+  <div class="modal-dialog modal-md">
+    <div class="modal-header">
+      <h3>Bulk CSV Import</h3>
+      <button class="modal-close" id="btn-close-upload">×</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="upload-form">
+        <div class="form-group">
+          <label>Source System</label>
+          <select id="upload-source" class="select-control">
+            <option value="SourceA">Core Banking — Source A</option>
+            <option value="SourceB">Credit Card — Source B</option>
+            <option value="SourceC">Loan System — Source C</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>CSV File</label>
+          <input type="file" id="upload-file" class="input-control" accept=".csv" required>
+        </div>
+
+        <div class="upload-note">
+          CSV should contain a source customer ID plus customer fields such as Name, Email, Phone, DOB and Address.
+        </div>
+
+        <div id="upload-status"></div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-upload">Cancel</button>
+      <button class="btn btn-primary" id="btn-submit-upload">Upload CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CUSTOMER -->
+<div class="modal-backdrop" id="customer-modal">
+  <div class="modal-dialog modal-md">
+    <div class="modal-header">
+      <h3>Upload Customer Data</h3>
+      <button class="modal-close" id="btn-close-customer">×</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="customer-form">
+        <div class="form-group">
+          <label>Source System</label>
+          <select id="customer-source" class="select-control">
+            <option value="SourceA">Core Banking — Source A</option>
+            <option value="SourceB">Credit Card — Source B</option>
+            <option value="SourceC">Loan System — Source C</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Source Customer ID *</label>
+          <input id="customer-source-id" class="input-control" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name</label>
+            <input id="customer-name" class="input-control">
+          </div>
+          <div class="form-group">
+            <label>DOB</label>
+            <input id="customer-dob" type="date" class="input-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email</label>
+            <input id="customer-email" type="email" class="input-control">
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input id="customer-phone" class="input-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Address</label>
+          <textarea id="customer-address" class="input-control textarea-control"></textarea>
+        </div>
+
+        <div id="customer-upload-status"></div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-customer">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-customer">Save Customer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="app-toast"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
